@@ -1,6 +1,7 @@
 <script>
 import PlayersListComponent from './PlayersListComponent.vue';
 import FormComponent from './FormComponent.vue';
+import Player from '@/models/Player';
 
 export default {
   name: "CastContainer",
@@ -74,14 +75,13 @@ export default {
       this.$emit('updateTribeQtySet', true);
     },
     createPlayersList() {
-      this.players = Array.from({ length: this.totalPlayers }, (_, i) => ({
-        id: i + 1,
-        name: this.tempNames[i] || '',   // Temp names used
-        tribe: Math.floor(i / (this.totalPlayers / this.totalTribes)) + 1,
-        advantagesHeld: 0,
-        advantagesPlayed: 0,
-        eliminated: false,
-      }));
+      this.players = Array.from({ length: this.totalPlayers }, (_, i) => {
+        return new Player(
+          i + 1,
+          this.tempNames[i] || '',
+          Math.floor(i / (this.totalPlayers / this.totalTribes)) + 1
+        );
+      });
       this.$emit('update:players', this.players);
     },
     createTribes() {

@@ -1,12 +1,12 @@
 <script>
+import SubmitButton from './SubmitButton.vue';
+
 export default {
   name: "FormComponent",
+  components: {
+    SubmitButton,
+  },
   props: {
-    submitBtnText: {
-      type: String,
-      required: true,
-      default: '',
-    },
     submitAction: {
       type: Function,
       required: true,
@@ -15,41 +15,38 @@ export default {
       type: Boolean,
       default: true,
     },
+    submitBtnText: {
+      type: String,
+      default: "Submit",
+    },
     modalToggle: {
       type: String,
-      default: '', 
+      default: "",
     },
     modalTarget: {
       type: String,
-      default: '',
+      default: "",
     },
   },
   methods: {
     handleSubmit() {
       this.submitAction();
     },
-  }
-}
-
+  },
+};
 </script>
 
-<!-- HTML -->
 <template>
   <form @submit.prevent="handleSubmit">
     <slot></slot>
-    <div v-if="showSubmitButton" style="display: flex; justify-content: center;">
-      <button
-        type="submit"
-        class="btn btn-primary bg-gradient"
-        :data-bs-toggle="modalToggle || null"
-        :data-bs-target="modalTarget || null"
-      >
-        <strong>{{ submitBtnText }}</strong>
-      </button>
+    <div v-if="showSubmitButton" class="text-end">
+      <submit-button
+        :text="submitBtnText"
+        :modalToggle="modalToggle"
+        :modalTarget="modalTarget"
+      />
     </div>
   </form>
 </template>
 
-
-<!-- STYLES -->
 <style scoped></style>

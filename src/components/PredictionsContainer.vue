@@ -155,15 +155,15 @@ export default {
                 </form-component>
               </div>
               <!--Season-long content-->
-              <div v-if="showSeasonContent" class="tab-pane fade active show" id="season-long-tab-pane"
-                role="tabpanel" aria-labelledby="season-long-tab" tabindex="0">
+              <div v-if="showSeasonContent" class="tab-pane fade active show" id="season-long-tab-pane" role="tabpanel"
+                aria-labelledby="season-long-tab" tabindex="0">
                 <h5 class="mt-1 text-center">
                   Will Any of the Following Occur?
                 </h5>
                 <form-component :submit-btn-text="'Next Tab'" :show-submit-button="true"
                   :submit-action="confirmSeasonLong">
                   <template v-slot>
-                    <div class="row" id="first-adv-container">
+                    <div class="row" id="first-adv-container" v-if="!firstAdvantagePlayer">
                       <div class="col">
                         <div class="row px-1">
                           <div class="col-6 py-1">
@@ -184,8 +184,8 @@ export default {
                       <div class="col">
                         <div class="row px-1">
                           <div class="col-6 py-1">
-                            <label class="form-label">Will they play it correctly or waste
-                              it?</label>
+                            <label class="form-label">Will {{players.find(player => player.id ===
+                              firstAdvantagePlayer)?.name.split(' ')[0]}} play it correctly or waste it?</label>
                           </div>
                           <br />
                           <div class="col-auto m-auto">
@@ -209,7 +209,7 @@ export default {
                         <div class="row">
                           <div class="col-6">
                             <p>
-                              For the first tribe swap: Will the number of tribes be changed?
+                              For the first tribe swap: Will the total number of tribes be changed?
                             </p>
                           </div>
                           <div class="col-auto m-auto">
@@ -294,7 +294,7 @@ export default {
                   End of Season Guesses
                 </h5>
                 <form-component :submit-action="confirmAllPredictions" :show-submit-button="true"
-                  :submitBtnText="'Lock-In Predictions'" modalToggle="modal" modalTarget="#setGuessesModal">
+                  :submit-btn-text="'Lock-In Predictions'" modalToggle="modal" modalTarget="#setGuessesModal">
                   <template v-slot>
                     <!-- Winner -->
                     <div class="row py-1">

@@ -121,6 +121,8 @@
 
 html, body {
   height: 100vh;
+  background-image: url(../img/ExileIsland.jpg);
+  background-size: cover;
 }
 
 form {

@@ -18,6 +18,7 @@ export default {
       nextFoundAdvantage: '',
       nextAdvantagePlayed: '',
       showPlayedAdvantagesForm: false,
+      answeredAdvantagesPlayed: false,
     };
   },
   computed: {
@@ -29,11 +30,12 @@ export default {
     toggleLastEpisodeForm() {
       this.lastEpisodeFormVisible = !this.lastEpisodeFormVisible;
     },
-    toggleNextEpisodeForm() {
-      this.nextEpisodeFormVisible = !this.nextEpisodeFormVisible;
-    },
     logNewEpisode() {
       this.toggleLastEpisodeForm();
+    },
+    handlePlayedAdvantagesChange(event) {
+      this.showPlayedAdvantagesForm = event.target.value === 'yes';
+      this.answeredAdvantagesPlayed = true;
     },
     logEpisode() {
       console.log('Last Eliminated:', this.lastEliminated);
@@ -44,7 +46,7 @@ export default {
         eliminatedPlayer.eliminated = true;
       }
       this.toggleLastEpisodeForm();
-      this.toggleNextEpisodeForm();
+      this.nextEpisodeFormVisible = true;
     },
     lockInPredictions() {
       console.log('Next Eliminated:', this.nextEliminated);
@@ -67,11 +69,9 @@ export default {
       this.nextFoundAdvantage = '';
       this.nextAdvantagePlayed = '';
       this.showPlayedAdvantagesForm = false;
+      this.nextEpisodeFormVisible = false;
 
       this.$emit('changePage', 'OverviewContainer');
-    },
-    handlePlayedAdvantagesChange(event) {
-      this.showPlayedAdvantagesForm = event.target.value === 'yes';
     },
   }
 }
@@ -88,7 +88,7 @@ export default {
       <div class="card inner-card">
         <div class="card-body">
           <!-- Record Starting Page -->
-          <div id="log-new-ep-container" class="" v-if="!lastEpisodeFormVisible && !nextEpisodeFormVisible">
+          <div id="log-new-ep-container" v-if="!lastEpisodeFormVisible && !nextEpisodeFormVisible">
             <div class="">
               <h5 class="card-title p-5 my-5">
                 **Make sure to watch the next episode
@@ -103,110 +103,91 @@ export default {
               </div>
             </div>
           </div>
+
           <!-- Last Episode Form -->
           <form id="last-episode-form" v-if="lastEpisodeFormVisible">
-            <h5 class="text-center">Enter Info From Last Episode</h5>
-            <div class="row">
-              <div class="col-6 ps-4">
-                <label for="last-eliminated" class="col-form-label">
+            <!-- Step 1: Combined Questions -->
+            <div v-if="!showPlayedAdvantagesForm">
+              <!-- Last Eliminated -->
+              <div class="row mb-3">
+                <label for="last-eliminated" class="col-6 col-form-label text-end">
                   Who was eliminated from the game?
                 </label>
-              </div>
-              <div class="col-auto m-auto">
-                <select id="last-eliminated" class="form-select" v-model="lastEliminated">
-                  <option value="">Select...</option>
-                  <option v-for="player in playersStillPlaying" :value="player.id">{{ player.name }}</option>
-                </select>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-6 ps-4">
-                <p>Was a tie-breaking rock draw done?</p>
-              </div>
-              <div class="col-auto m-auto">
-                <div class="form-check text-center">
-                  <input class="form-check-input" type="radio" name="log-rock-draw" id="log-rock-draw-yes"
-                    value="yes" />
-                  <label class="form-check-label" for="log-rock-draw-yes">
-                    Yes
-                  </label>
-                </div>
-                <div class="form-check text-center">
-                  <input class="form-check-input" type="radio" name="log-rock-draw" id="log-rock-draw-no" value="no" />
-                  <label class="form-check-label" for="log-rock-draw-no">
-                    No
-                  </label>
+                <div class="col-6">
+                  <select id="last-eliminated" class="form-select" v-model="lastEliminated">
+                    <option value="">Select...</option>
+                    <option v-for="player in playersStillPlaying" :value="player.id" :key="player.id">
+                      {{ player.name }}
+                    </option>
+                  </select>
                 </div>
               </div>
-            </div>
-            <div class="row">
-              <div class="col-12 text-start">
-                <label for="found-advantage" class="col-form-label">
-                  Select any players who <strong>found</strong> an
-                  idol/advantage:
+
+              <!-- Found Advantages -->
+              <div class="row mb-3">
+                <label class="col-12 col-form-label text-center">
+                  Select any players who <strong>found</strong> an idol/advantage:
                 </label>
-              </div>
-              <div class="col ps-4 pe-4">
-                <div class="row pt-1">
-                  <div class="col-4" v-for="player in playersStillPlaying" :key="player.id">
-                    <div class="form-check text-center">
-                      <input class="found-advantage-checkbox form-check-input" type="checkbox" :value="player.id"
-                        :id="player.id + '-found-advantage'" v-model="foundAdvantages" />
-                      <label class="form-check-label" :for="player.id + '-found-advantage'">
-                        {{ player.name }}
-                      </label>
+                <div class="col-12">
+                  <div class="row">
+                    <div class="col-6 col-md-4 col-lg-3 mb-2" v-for="player in playersStillPlaying" :key="player.id">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" :value="player.id"
+                          :id="player.id + '-found-advantage'" v-model="foundAdvantages" />
+                        <label class="form-check-label" :for="player.id + '-found-advantage'">
+                          {{ player.name }}
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="row">
-              <div class="col-6 ps-4">
-                <p>
+
+              <!-- Were Any Idols Played -->
+              <div class="row mb-3">
+                <label class="col-6 col-form-label text-end">
                   Were any idols/advantages <strong>played</strong>?
-                </p>
-              </div>
-              <div class="col-auto m-auto">
-                <div class="form-check text-center">
-                  <input class="form-check-input" type="radio" name="radio-adv-played" id="radio-adv-played-yes"
-                    value="yes" @change="handlePlayedAdvantagesChange" />
-                  <label class="form-check-label" for="radio-adv-played-yes">
-                    Yes
-                  </label>
-                </div>
-                <div class="form-check text-center">
-                  <input class="form-check-input" type="radio" name="radio-adv-played" id="radio-adv-played-no"
-                    value="no" @change="handlePlayedAdvantagesChange" />
-                  <label class="form-check-label" for="radio-adv-played-no">
-                    No
-                  </label>
+                </label>
+                <div class="col-6">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="radio-adv-played" id="radio-adv-played-yes"
+                      value="yes" @change="handlePlayedAdvantagesChange" />
+                    <label class="form-check-label" for="radio-adv-played-yes">Yes</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="radio-adv-played" id="radio-adv-played-no"
+                      value="no" @change="handlePlayedAdvantagesChange" />
+                    <label class="form-check-label" for="radio-adv-played-no">No</label>
+                  </div>
                 </div>
               </div>
             </div>
-            <!--    displays only if above is YES    -->
-            <div class="row" v-if="showPlayedAdvantagesForm">
-              <div class="col-12 text-start">
-                <label for="played-advantage" class="col-form-label">
-                  Select all players who <strong>played</strong> an
-                  idol/advantage:
+
+            <!-- Step 2: Played Advantages Details -->
+            <div v-if="showPlayedAdvantagesForm">
+              <div class="row mb-3">
+                <label class="col-12 col-form-label text-center">
+                  Select all players who <strong>played</strong> an idol/advantage:
                 </label>
-              </div>
-              <div class="col ps-4 pe-4">
-                <div class="row pt-1">
-                  <div class="col-4" v-for="player in playersStillPlaying" :key="player.id">
-                    <div class="form-check text-center">
-                      <input class="played-advantage-checkbox form-check-input" type="checkbox" :value="player.id"
-                        :id="player.id + '-played-advantage'" v-model="playedAdvantages" />
-                      <label class="form-check-label" :for="player.id + '-played-advantage'">
-                        {{ player.name }}
-                      </label>
+                <div class="col-12">
+                  <div class="row">
+                    <div class="col-6 col-md-4 col-lg-3 mb-2" v-for="player in playersStillPlaying" :key="player.id">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" :value="player.id"
+                          :id="player.id + '-played-advantage'" v-model="playedAdvantages" />
+                        <label class="form-check-label" :for="player.id + '-played-advantage'">
+                          {{ player.name }}
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="row mt-3 mb-1 justify-content-end">
-              <div class="col-5 col-md-3">
+
+            <!-- Log Episode Button -->
+            <div class="row mt-4" v-if="answeredAdvantagesPlayed">
+              <div class="col text-end">
                 <button id="conf-log-episode-btn" class="btn btn-primary bg-gradient" type="button" @click="logEpisode">
                   <strong>Log Episode</strong>
                 </button>
@@ -215,59 +196,60 @@ export default {
           </form>
           <!-- Next Episode Form -->
           <form id="next-episode-form" v-if="nextEpisodeFormVisible">
-            <h5 class="text-center">Enter Guesses for Next Episode</h5>
-            <div class="row">
-              <div class="col-6 col-lg-4 ps-4">
-                <label for="next-eliminated" class="col-form-label">
-                  Who will be voted off <em>next</em> episode?
-                </label>
-              </div>
-              <div class="col-auto m-auto">
-                <select id="next-elimination" class="form-select" v-model="nextEliminated">
+            <h5 class="text-center mb-4">Enter Predictions for Next Episode</h5>
+
+            <!-- Next Eliminated -->
+            <div class="row my-5">
+              <label for="next-eliminated" class="col-6 col-form-label text-end">
+                Who will be eliminated <em>next</em> episode?
+              </label>
+              <div class="col-6">
+                <select id="next-eliminated" class="form-select" v-model="nextEliminated">
                   <option value="">Select...</option>
-                  <option v-for="player in playersStillPlaying" :value="player.id">{{ player.name }}</option>
+                  <option v-for="player in playersStillPlaying" :value="player.id" :key="player.id">
+                    {{ player.name }}
+                  </option>
                 </select>
               </div>
             </div>
-            <div class="row">
-              <div class="col-7 col-lg-5 ps-4">
-                <label for="next-find-adv" class="col-form-label">
-                  Select 1 player to <strong>find</strong> an idol or
-                  advantage.
-                </label>
-              </div>
-              <div class="col-auto mt-auto mb-auto">
+
+            <!-- Next Found Advantage -->
+            <div class="row mb-5">
+              <label for="next-find-adv" class="col-6 col-form-label text-end">
+                Select 1 player to <strong>find</strong> an idol or advantage:
+              </label>
+              <div class="col-6">
                 <select id="next-find-adv" class="form-select" v-model="nextFoundAdvantage">
                   <option value="">Select...</option>
-                  <option v-for="player in playersStillPlaying" :value="player.id">{{ player.name }}</option>
+                  <option v-for="player in playersStillPlaying" :value="player.id" :key="player.id">
+                    {{ player.name }}
+                  </option>
                 </select>
               </div>
             </div>
-            <div class="row">
-              <div class="col-7 col-lg-5 ps-4">
-                <p>
-                  Will an idol/advantage be <strong>played</strong>?
-                </p>
-              </div>
-              <div class="col-auto ms-4 m-auto">
-                <div class="form-check text-center">
+
+            <!-- Next Played Advantage -->
+            <div class="row mb-3">
+              <label class="col-6 col-form-label text-end">
+                Will an idol/advantage be <strong>played</strong>?
+              </label>
+              <div class="col-6">
+                <div class="form-check">
                   <input class="form-check-input" type="radio" name="radio-next-adv-play" id="radio-next-adv-play-yes"
                     value="yes" v-model="nextAdvantagePlayed" />
-                  <label class="form-check-label" for="radio-next-adv-play-yes">
-                    Yes
-                  </label>
+                  <label class="form-check-label" for="radio-next-adv-play-yes">Yes</label>
                 </div>
-                <div class="form-check text-center">
+                <div class="form-check">
                   <input class="form-check-input" type="radio" name="radio-next-adv-play" id="radio-next-adv-play-no"
                     value="no" v-model="nextAdvantagePlayed" />
-                  <label class="form-check-label" for="radio-next-adv-play-no">
-                    No
-                  </label>
+                  <label class="form-check-label" for="radio-next-adv-play-no">No</label>
                 </div>
               </div>
             </div>
-            <div class="row mt-3 mb-1 justify-content-end">
-              <div class="col-7 col-lg-5">
+
+            <!-- Lock-In Predictions Button -->
+            <div class="row mt-4">
+                <div class="col text-end">
                 <button id="conf-next-episode-btn" class="btn btn-primary bg-gradient" type="button"
                   @click="lockInPredictions">
                   <strong>Lock-In Predictions</strong>
